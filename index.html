@@ -3,24 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Key 申请</title>
+    <title>API Key 申请 - 超脑AI孵化器</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="bg-grid"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
     <div class="container">
+        <div class="brand">超脑AI孵化器</div>
         <h1>API Key 申请</h1>
-        <p class="remaining">剩余可用: <span id="remaining-count">加载中...</span> 个</p>
+        <p class="remaining">剩余可用: <span id="remaining-count">--</span> 个</p>
 
         <div id="apply-section">
             <input type="text" id="name-input" placeholder="请输入您的名字" maxlength="50">
-            <button id="apply-btn" onclick="applyKey()">确认申请</button>
+            <button id="apply-btn" onclick="applyKey()">
+                <span>确认申请</span>
+                <div class="btn-glow"></div>
+            </button>
         </div>
 
         <div id="result-section" style="display: none;">
-            <p class="success-msg">申请成功！您的 API Key：</p>
+            <p class="success-msg">✓ 申请成功</p>
             <div class="key-display">
                 <code id="api-key-display"></code>
-                <button onclick="copyKey()">复制</button>
+                <button class="copy-btn" onclick="copyKey()">复制</button>
             </div>
             <p class="tip">请妥善保管，此 Key 仅显示一次</p>
         </div>
