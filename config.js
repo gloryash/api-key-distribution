@@ -1,11 +1,8 @@
-// 配置文件 - 请填入你的 GitHub Gist 信息
+// JSONBin.io 配置
 const CONFIG = {
-    // GitHub Personal Access Token (需要 gist 权限)
-    GITHUB_TOKEN: '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',
+    // Bin ID
+    BIN_ID: '69802ccdae596e708f0aa57e',
 
-    // Gist ID (创建 Gist 后获取)
-    GIST_ID: '6668e26aa33720ecfabc1b7be318a0f6',
-
-    // Gist 中存储数据的文件名
-    GIST_FILENAME: 'api_keys.json'
+    // Master Key (用于写入)
+    MASTER_KEY: '$2a$10$JyMC0YV3sqgjcKYZstH5xeWNH/UB9Fp.uqygRk6VIaO4PjFMcgaKS'
 };

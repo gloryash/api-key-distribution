@@ -4,24 +4,16 @@ let apiKeysData = null;
 // 页面加载时获取数据
 document.addEventListener('DOMContentLoaded', loadData);
 
-// 从 Gist 加载数据
+// 从 JSONBin 加载数据
 async function loadData() {
     try {
-        const response = await fetch(`https://api.github.com/gists/${CONFIG.GIST_ID}`, {
-            headers: {
-                'Authorization': `token ${CONFIG.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}/latest`, {
+            headers: { 'X-Bin-Meta': 'false' }
         });
 
-        if (!response.ok) {
-            throw new Error('无法加载数据');
-        }
+        if (!response.ok) throw new Error('无法加载数据');
 
-        const gist = await response.json();
-        const content = gist.files[CONFIG.GIST_FILENAME].content;
-        apiKeysData = JSON.parse(content);
-
+        apiKeysData = await response.json();
         updateRemainingCount();
     } catch (error) {
         console.error('加载失败:', error);
@@ -51,31 +43,24 @@ async function applyKey() {
         return;
     }
 
-    // 查找可用的 Key
     const availableKey = apiKeysData.keys.find(k => !k.claimed);
     if (!availableKey) {
         showError('抱歉，API Key 已全部领完');
         return;
     }
 
-    // 禁用按钮
     const btn = document.getElementById('apply-btn');
     btn.disabled = true;
     btn.textContent = '申请中...';
 
     try {
-        // 标记为已领取
         availableKey.claimed = true;
         availableKey.claimedBy = name;
         availableKey.claimedAt = new Date().toISOString();
 
-        // 更新 Gist
-        await updateGist();
-
-        // 显示结果
+        await updateBin();
         showResult(availableKey.key);
     } catch (error) {
-        // 回滚
         availableKey.claimed = false;
         delete availableKey.claimedBy;
         delete availableKey.claimedAt;
@@ -86,27 +71,18 @@ async function applyKey() {
     }
 }
 
-// 更新 Gist 数据
-async function updateGist() {
-    const response = await fetch(`https://api.github.com/gists/${CONFIG.GIST_ID}`, {
-        method: 'PATCH',
+// 更新 JSONBin 数据
+async function updateBin() {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.BIN_ID}`, {
+        method: 'PUT',
         headers: {
-            'Authorization': `token ${CONFIG.GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Master-Key': CONFIG.MASTER_KEY
         },
-        body: JSON.stringify({
-            files: {
-                [CONFIG.GIST_FILENAME]: {
-                    content: JSON.stringify(apiKeysData, null, 2)
-                }
-            }
-        })
+        body: JSON.stringify(apiKeysData)
     });
 
-    if (!response.ok) {
-        throw new Error('更新失败');
-    }
+    if (!response.ok) throw new Error('更新失败');
 }
 
 // 显示申请结果
