@@ -43,6 +43,13 @@ async function applyKey() {
         return;
     }
 
+    // 检查名字是否已领取过
+    const alreadyClaimed = apiKeysData.keys.find(k => k.claimedBy === name);
+    if (alreadyClaimed) {
+        showError('该名字已领取过 API Key，每人限领一个');
+        return;
+    }
+
     const availableKey = apiKeysData.keys.find(k => !k.claimed);
     if (!availableKey) {
         showError('抱歉，API Key 已全部领完');
