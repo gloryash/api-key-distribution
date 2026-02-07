@@ -22,9 +22,10 @@ async function loadData() {
     }
 }
 
-// 更新剩余数量显示
+// 更新剩余数量显示（当前轮次剩余）
 function updateRemainingCount() {
-    const available = apiKeysData.keys.filter(k => !k.claimed).length;
+    const minClaimCount = Math.min(...apiKeysData.keys.map(k => k.claimCount || 0));
+    const available = apiKeysData.keys.filter(k => (k.claimCount || 0) === minClaimCount).length;
     document.getElementById('remaining-count').textContent = available;
 }
 
@@ -43,16 +44,22 @@ async function applyKey() {
         return;
     }
 
-    // 检查名字是否已领取过
-    const alreadyClaimed = apiKeysData.keys.find(k => k.claimedBy === name);
-    if (alreadyClaimed) {
-        showError('该名字已领取过 API Key，每人限领一个');
+    // 检查名字在当前轮次是否已领取过
+    const minClaimCount = Math.min(...apiKeysData.keys.map(k => k.claimCount || 0));
+    const currentRoundClaims = apiKeysData.keys.filter(k =>
+        (k.claimCount || 0) > minClaimCount ||
+        ((k.claimCount || 0) === minClaimCount && k.claimedBy === name)
+    );
+    const alreadyClaimedThisRound = currentRoundClaims.find(k => k.claimedBy === name);
+    if (alreadyClaimedThisRound) {
+        showError('您在本轮已领取过 API Key，请等待下一轮');
         return;
     }
 
-    const availableKey = apiKeysData.keys.find(k => !k.claimed);
+    // 找当前轮次中未被领取的 key（claimCount 最小的）
+    const availableKey = apiKeysData.keys.find(k => (k.claimCount || 0) === minClaimCount);
     if (!availableKey) {
-        showError('抱歉，API Key 已全部领完');
+        showError('系统错误，请刷新重试');
         return;
     }
 
@@ -61,14 +68,14 @@ async function applyKey() {
     btn.textContent = '申请中...';
 
     try {
-        availableKey.claimed = true;
+        availableKey.claimCount = (availableKey.claimCount || 0) + 1;
         availableKey.claimedBy = name;
         availableKey.claimedAt = new Date().toISOString();
 
         await updateBin();
         showResult(availableKey.key);
     } catch (error) {
-        availableKey.claimed = false;
+        availableKey.claimCount = (availableKey.claimCount || 1) - 1;
         delete availableKey.claimedBy;
         delete availableKey.claimedAt;
 
